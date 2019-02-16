@@ -19,6 +19,10 @@ ifeq ($(CONFIG_ARCH_MSM8953), y)
 include $(srctree)/techpack/audio/config/msm8953auto.conf
 export
 endif
+ifeq ($(CONFIG_PROJECT_DAISY), y)
+include $(srctree)/techpack/audio/config/msm8953auto-daisy.conf
+export
+endif
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE     += \
@@ -49,6 +53,10 @@ endif
 ifeq ($(CONFIG_ARCH_MSM8953), y)
 LINUXINCLUDE    += \
                 -include $(srctree)/techpack/audio/config/msm8953autoconf.h
+endif
+ifeq ($(CONFIG_PROJECT_DAISY), y)
+LINUXINCLUDE    += \
+                -include $(srctree)/techpack/audio/config/msm8953autoconf-daisy.h
 endif
 
 obj-y += asoc/
