@@ -16,13 +16,13 @@
 / {
 	firmware: firmware {
 		android {
-			/delete-node/ vbmeta;
+     	           	/delete-node/ vbmeta;
 			fstab {
-				vendor {
-					fsmgr_flags = "wait";
-				};
-			};
-		};
+                        	vendor {
+                                	fsmgr_flags = "wait";
+                                };
+                        };
+                };
 	};
 	reserved-memory {
 		other_ext_mem: other_ext_region@0 {
@@ -39,9 +39,6 @@
 			no-map;
 			reg = <0x0 0x9ff00000 0x0 0x00100000>;
 		};
-		secure_mem: secure_region@0 {
-			size = <0 0x09800000>;
-		};
 	};
 	aliases {
 		spi6 = &spi_6;
@@ -49,10 +46,6 @@
 };
 
 &soc {
-        sdhc_1: sdhci@7824900 {
-		reg = <0x7824900 0x500>, <0x7824000 0x800>, <0x7824e00 0x200>;
-		reg-names = "hc_mem", "core_mem", "cmdq_mem";
-        };
         spi_6: spi@7af6000 { /* BLSP2 QUP2 */
 		compatible = "qcom,spi-qup-v2";
 		#address-cells = <1>;
