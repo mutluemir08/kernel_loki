@@ -1096,4 +1096,7 @@ config SND_SOC_AW8896
 	help
 	  Enables support for aw8896 series Smart PA.
 
+config SOUND_CONTROL
+	bool "Sound control for wcd9335"
+
 endmenu
