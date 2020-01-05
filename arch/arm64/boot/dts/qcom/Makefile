@@ -1,3 +1,7 @@
+#dtb-$(CONFIG_ARCH_QCOM)	+= apq8016-sbc.dtb msm8916-mtp.dtb
+#dtb-$(CONFIG_ARCH_QCOM)	+= msm8996-mtp.dtb
+#dtb-$(CONFIG_ARCH_QCOM)	+= apq8096-db820c.dtb
+
 ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
 	dtbo-$(CONFIG_ARCH_SDM845) += \
 		sdm845-cdp-overlay.dtbo \
@@ -391,7 +395,12 @@ dtbo-$(CONFIG_ARCH_SDM429) += sdm429-mtp-overlay.dtbo \
 	sdm429-qrd-overlay.dtbo \
 	sdm429-spyro-qrd-evt-overlay.dtbo \
 	sdm429-spyro-qrd-dvt-overlay.dtbo \
-	sdm429-spyro-qrd-wdp-overlay.dtbo
+	sda429-spyro-qrd-dvt-overlay.dtbo \
+	sdm429-spyro-qrd-wdp-overlay.dtbo \
+	sdm429-bg-wtp-overlay.dtbo \
+	sdm429-bg-wdp-overlay.dtbo \
+	sda429-bg-wdp-overlay.dtbo \
+	sda429-bg-wtp-overlay.dtbo
 
 msm8940-mtp-overlay.dtbo-base := msm8940-pmi8950.dtb \
 	msm8940-pmi8937.dtb \
@@ -509,10 +518,14 @@ sdm429-qrd-overlay.dtbo-base := sdm429.dtb \
 	msm8937-interposer-sdm429.dtb
 sdm429-spyro-qrd-evt-overlay.dtbo-base := sdm429-spyro.dtb
 sdm429-spyro-qrd-dvt-overlay.dtbo-base := sdm429-spyro-dvt.dtb
+sda429-spyro-qrd-dvt-overlay.dtbo-base := sda429-spyro-dvt.dtb
 sdm429-spyro-qrd-wdp-overlay.dtbo-base := sdm429-spyro-wdp.dtb
+sdm429-bg-wtp-overlay.dtbo-base := sdm429-bg-wtp.dtb
+sda429-bg-wtp-overlay.dtbo-base := sda429-bg-wtp.dtb
+sdm429-bg-wdp-overlay.dtbo-base := sdm429-bg-wdp.dtb
+sda429-bg-wdp-overlay.dtbo-base := sda429-bg-wdp.dtb
 else
-dtb-$(CONFIG_ARCH_MSM8953) += msm8953-qrd-sku3-sakura.dtb \
-                              msm8953-qrd-sku3-daisy.dtb
+dtb-$(CONFIG_ARCH_MSM8953) += msm8953-qrd-sku3-vince.dtb
 
 dtb-$(CONFIG_ARCH_MSM8937) += msm8937-pmi8950-mtp.dtb \
 	msm8937-interposer-sdm439-cdp.dtb \
@@ -614,7 +627,8 @@ dtb-$(CONFIG_ARCH_SDM429) += sdm429-mtp.dtb \
 	sdm429-spyro.dtb \
 	sdm429-spyro-dvt.dtb \
 	sdm429-spyro-wdp.dtb \
-	sdw3300-bg-1gb-wtp.dtb
+	sda429-spyro-dvt.dtb \
+	sdm429-bg-iot-wtp.dtb
 
 endif
 
