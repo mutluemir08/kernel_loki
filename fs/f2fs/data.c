@@ -381,20 +381,20 @@ static void __submit_merged_bio(struct f2fs_bio_info *io)
 	io->bio = NULL;
 }
 
-static bool __has_merged_page(struct f2fs_bio_info *io, struct inode *inode,
+static bool __has_merged_page(struct bio *bio, struct inode *inode,
 						struct page *page, nid_t ino)
 {
 	struct bio_vec *bvec;
 	struct page *target;
 	int i;
 
-	if (!io->bio)
+	if (!bio)
 		return false;
 
 	if (!inode && !page && !ino)
 		return true;
 
-	bio_for_each_segment_all(bvec, io->bio, i) {
+	bio_for_each_segment_all(bvec, bio, i) {
 
 		if (bvec->bv_page->mapping)
 			target = bvec->bv_page;
@@ -445,7 +445,7 @@ static void __submit_merged_write_cond(struct f2fs_sb_info *sbi,
 			struct f2fs_bio_info *io = sbi->write_io[btype] + temp;
 
 			down_read(&io->io_rwsem);
-			ret = __has_merged_page(io, inode, page, ino);
+			ret = __has_merged_page(io->bio, inode, page, ino);
 			up_read(&io->io_rwsem);
 		}
 		if (ret)
@@ -2106,6 +2106,8 @@ out:
 }
 
 static int __write_data_page(struct page *page, bool *submitted,
+				struct bio **bio,
+				sector_t *last_block,
 				struct writeback_control *wbc,
 				enum iostat_type io_type)
 {
@@ -2131,6 +2133,8 @@ static int __write_data_page(struct page *page, bool *submitted,
 		.need_lock = LOCK_RETRY,
 		.io_type = io_type,
 		.io_wbc = wbc,
+		.bio = bio,
+		.last_block = last_block,
 	};
 
 	trace_f2fs_writepage(page, DATA);
@@ -2229,10 +2233,13 @@ out:
 
 	unlock_page(page);
 	if (!S_ISDIR(inode->i_mode) && !IS_NOQUOTA(inode) &&
-					!F2FS_I(inode)->cp_task)
+					!F2FS_I(inode)->cp_task) {
+		f2fs_submit_ipu_bio(sbi, bio, page);
 		f2fs_balance_fs(sbi, need_balance_fs);
+	}
 
 	if (unlikely(f2fs_cp_error(sbi))) {
+		f2fs_submit_ipu_bio(sbi, bio, page);
 		f2fs_submit_merged_write(sbi, DATA);
 		submitted = NULL;
 	}
@@ -2259,7 +2266,7 @@ redirty_out:
 static int f2fs_write_data_page(struct page *page,
 					struct writeback_control *wbc)
 {
-	return __write_data_page(page, NULL, wbc, FS_DATA_IO);
+	return __write_data_page(page, NULL, NULL, NULL, wbc, FS_DATA_IO);
 }
 
 /*
@@ -2275,6 +2282,8 @@ static int f2fs_write_cache_pages(struct address_space *mapping,
 	int done = 0;
 	struct pagevec pvec;
 	struct f2fs_sb_info *sbi = F2FS_M_SB(mapping);
+	struct bio *bio = NULL;
+	sector_t last_block;
 	int nr_pages;
 	pgoff_t uninitialized_var(writeback_index);
 	pgoff_t index;
@@ -2351,17 +2360,20 @@ continue_unlock:
 			}
 
 			if (PageWriteback(page)) {
-				if (wbc->sync_mode != WB_SYNC_NONE)
+				if (wbc->sync_mode != WB_SYNC_NONE) {
 					f2fs_wait_on_page_writeback(page,
 							DATA, true, true);
-				else
+					f2fs_submit_ipu_bio(sbi, &bio, page);
+				} else {
 					goto continue_unlock;
+				}
 			}
 
 			if (!clear_page_dirty_for_io(page))
 				goto continue_unlock;
 
-			ret = __write_data_page(page, &submitted, wbc, io_type);
+			ret = __write_data_page(page, &submitted, &bio,
+					&last_block, wbc, io_type);
 			if (unlikely(ret)) {
 				/*
 				 * keep nr_to_write, since vfs uses this to
@@ -2410,6 +2422,9 @@ continue_unlock:
 	if (nwritten)
 		f2fs_submit_merged_write_cond(F2FS_M_SB(mapping), mapping->host,
 								NULL, 0, DATA);
+	/* submit cached bio of IPU write */
+	if (bio)
+		__submit_bio(sbi, bio, DATA);
 
 	return ret;
 }
