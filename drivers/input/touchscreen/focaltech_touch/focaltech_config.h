@@ -123,7 +123,7 @@
  * Report Pressure in multitouch
  * 1:enable(default),0:disable
 */
-#define FTS_REPORT_PRESSURE_EN                  1
+#define FTS_REPORT_PRESSURE_EN                  0
 
 /*
  * Gesture function enable
@@ -135,7 +135,7 @@
  * ESD check & protection
  * default: disable
  */
-#define FTS_ESDCHECK_EN                         1
+#define FTS_ESDCHECK_EN                         0
 
 /*
  * Glove mode enable
@@ -165,7 +165,7 @@
  * Pinctrl enable
  * default: disable
  */
-#define FTS_PINCTRL_EN                          0
+#define FTS_PINCTRL_EN                          1
 
 /*
  * Customer power enable
@@ -175,6 +175,22 @@
 #define FTS_POWER_SOURCE_CUST_EN                1
 
 /****************************************************/
+
+/********************** Upgrade ****************************/
+/*
+ * auto upgrade
+ */
+#define FTS_AUTO_UPGRADE_EN						0
+
+/*
+ * auto upgrade for lcd cfg
+ */
+#define FTS_AUTO_LIC_UPGRADE_EN                 0
+
+/*
+ * Numbers of modules support
+ */
+#define FTS_GET_MODULE_NUM                      0
 
 /*
  * Check vendor_id number
