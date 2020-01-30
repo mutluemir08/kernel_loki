@@ -1583,7 +1583,6 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	snd_soc_dapm_ignore_suspend(dapm, "DMIC2");
 	snd_soc_dapm_ignore_suspend(dapm, "WSA_SPK OUT");
 	snd_soc_dapm_ignore_suspend(dapm, "LINEOUT");
-	snd_soc_dapm_ignore_suspend(dapm, "Ext Spk");
 
 	snd_soc_dapm_sync(dapm);
 
@@ -2348,40 +2347,6 @@ static struct snd_soc_dai_link msm8952_dai[] = {
 		.ignore_pmdown_time = 1,
 		.id = MSM_FRONTEND_DAI_MULTIMEDIA19,
 	},
-#ifdef CONFIG_SND_SOC_MAX98927
-        {/* hw:x,41 */
-		.name = "Quinary MI2S TX_Hostless",
-		.stream_name = "Quinary MI2S_TX Hostless Capture",
-		.cpu_dai_name = "QUIN_MI2S_TX_HOSTLESS",
-		.platform_name = "msm-pcm-hostless",
-		.dynamic = 1,
-		.dpcm_capture = 1,
-		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
-			SND_SOC_DPCM_TRIGGER_POST},
-		.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
-		.ignore_suspend = 1,
-		.ignore_pmdown_time = 1,
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.codec_name = "snd-soc-dummy",
-	},
-	{ /* hw:x,42 */
-		.name = "Quinary MI2S_RX Hostless",
-		.stream_name = "Quinary MI2S_RX Hostless",
-		.cpu_dai_name = "QUIN_MI2S_RX_HOSTLESS",
-		.platform_name	= "msm-pcm-hostless",
-		.dynamic = 1,
-		.dpcm_playback = 1,
-		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
-			SND_SOC_DPCM_TRIGGER_POST},
-		.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
-		.ignore_suspend = 1,
-		 /* this dailink has playback support */
-		.ignore_pmdown_time = 1,
-		/* This dainlink has MI2S support */
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.codec_name = "snd-soc-dummy",
-	},
-#endif
 	/* Backend I2S DAI Links */
 	{
 		.name = LPASS_BE_PRI_MI2S_RX,
@@ -2635,13 +2600,8 @@ static struct snd_soc_dai_link msm8952_dai[] = {
 		.stream_name = "Quinary MI2S Capture",
 		.cpu_dai_name = "msm-dai-q6-mi2s.4",
 		.platform_name = "msm-pcm-routing",
-#ifdef CONFIG_SND_SOC_MAX98927
-		.codec_dai_name = "max98927-aif1",
-		.codec_name = "max98927",
-#else
 		.codec_dai_name = "snd-soc-dummy-dai",
 		.codec_name = "snd-soc-dummy",
-#endif
 		.no_pcm = 1,
 		.dpcm_capture = 1,
 		.id = MSM_BACKEND_DAI_QUINARY_MI2S_TX,
@@ -2673,13 +2633,8 @@ static struct snd_soc_dai_link msm8952_quin_dai_link[] = {
 		.stream_name = "Quinary MI2S Playback",
 		.cpu_dai_name = "msm-dai-q6-mi2s.4",
 		.platform_name = "msm-pcm-routing",
-#ifdef CONFIG_SND_SOC_MAX98927
-		.codec_dai_name = "max98927-aif1",
-		.codec_name = "max98927",
-#else
 		.codec_dai_name = "snd-soc-dummy-dai",
 		.codec_name = "snd-soc-dummy",
-#endif
 		.no_pcm = 1,
 		.dpcm_playback = 1,
 		.id = MSM_BACKEND_DAI_QUINARY_MI2S_RX,
@@ -3211,7 +3166,7 @@ parse_mclk_freq:
 	}
 
 	pdata->spk_ext_pa_gpio_p = of_parse_phandle(pdev->dev.of_node,
-							"qcom,cdc-ext-pa-gpios", 0);
+							spk_ext_pa, 0);
 
 	ret = is_us_eu_switch_gpio_support(pdev, pdata);
 	if (ret < 0) {
