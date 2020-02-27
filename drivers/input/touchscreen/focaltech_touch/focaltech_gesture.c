@@ -16,27 +16,27 @@
  */
 
 /*****************************************************************************
- *
- * File Name: focaltech_gestrue.c
- *
- * Author: Focaltech Driver Team
- *
- * Created: 2016-08-08
- *
- * Abstract:
- *
- * Reference:
- *
- *****************************************************************************/
+*
+* File Name: focaltech_gestrue.c
+*
+* Author: Focaltech Driver Team
+*
+* Created: 2016-08-08
+*
+* Abstract:
+*
+* Reference:
+*
+*****************************************************************************/
 
 /*****************************************************************************
- * 1.Included header files
- *****************************************************************************/
+* 1.Included header files
+*****************************************************************************/
 #include "focaltech_core.h"
 #if FTS_GESTURE_EN
 /******************************************************************************
- * Private constant and macro definitions using #define
- *****************************************************************************/
+* Private constant and macro definitions using #define
+*****************************************************************************/
 #define KEY_GESTURE_U                           KEY_U
 #define KEY_GESTURE_UP                          KEY_UP
 #define KEY_GESTURE_DOWN                        KEY_DOWN
@@ -73,19 +73,19 @@
 #define GESTURE_LARGE_AREA      0x26    /* TP Coverage > 50% */
 
 /*****************************************************************************
- * Private enumerations, structures and unions using typedef
- *****************************************************************************/
+* Private enumerations, structures and unions using typedef
+*****************************************************************************/
 /*
- * header        -   byte0:gesture id
- *                   byte1:pointnum
- *                   byte2~7:reserved
- * coordinate_x  -   All gesture point x coordinate
- * coordinate_y  -   All gesture point y coordinate
- * mode          -   1:enable gesture function(default)
- *               -   0:disable
- * active        -   1:enter into gesture(suspend)
- *                   0:gesture disable or resume
- */
+* header        -   byte0:gesture id
+*                   byte1:pointnum
+*                   byte2~7:reserved
+* coordinate_x  -   All gesture point x coordinate
+* coordinate_y  -   All gesture point y coordinate
+* mode          -   1:enable gesture function(default)
+*               -   0:disable
+* active        -   1:enter into gesture(suspend)
+*                   0:gesture disable or resume
+*/
 struct fts_gesture_st {
 	u8 header[FTS_GESTRUE_POINTS_HEADER];
 	u16 coordinate_x[FTS_GESTRUE_POINTS];
@@ -95,17 +95,17 @@ struct fts_gesture_st {
 };
 
 /*****************************************************************************
- * Static variables
- *****************************************************************************/
+* Static variables
+*****************************************************************************/
 static struct fts_gesture_st fts_gesture_data;
 
 /*****************************************************************************
- * Global variable or extern global variabls/functions
- *****************************************************************************/
+* Global variable or extern global variabls/functions
+*****************************************************************************/
 
 /*****************************************************************************
- * Static function prototypes
- *****************************************************************************/
+* Static function prototypes
+*****************************************************************************/
 static ssize_t fts_gesture_show(struct device *dev,
 		struct device_attribute *attr, char *buf);
 static ssize_t fts_gesture_store(struct device *dev,
@@ -116,65 +116,37 @@ static ssize_t fts_gesture_buf_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count);
 
 /* sysfs gesture node
- *   read example: cat  wakeup_gesture        ---read gesture mode
- *   write example:echo 01 > wakeup_gesture   ---write gesture mode to 01
+ *   read example: cat  fts_gesture_mode        ---read gesture mode
+ *   write example:echo 01 > fts_gesture_mode   ---write gesture mode to 01
  *
  */
-static DEVICE_ATTR(wakeup_gesture, 0644,
+static DEVICE_ATTR(fts_gesture_mode, S_IRUGO|S_IWUSR,
 		fts_gesture_show, fts_gesture_store);
 /*
- *   read example: cat wakeup_gesture_buf        ---read gesture buf
+ *   read example: cat fts_gesture_buf        ---read gesture buf
  */
-static DEVICE_ATTR(wakeup_gesture_buf, 0644,
+static DEVICE_ATTR(fts_gesture_buf, S_IRUGO|S_IWUSR,
 		fts_gesture_buf_show, fts_gesture_buf_store);
-static struct attribute *wakeup_gesture_attrs[] = {
+static struct attribute *fts_gesture_mode_attrs[] = {
 
 
-	&dev_attr_wakeup_gesture.attr,
-	&dev_attr_wakeup_gesture_buf.attr,
+	&dev_attr_fts_gesture_mode.attr,
+	&dev_attr_fts_gesture_buf.attr,
 	NULL,
 };
 
 static struct attribute_group fts_gesture_group = {
 
-	.attrs = wakeup_gesture_attrs,
+	.attrs = fts_gesture_mode_attrs,
 };
 
 /************************************************************************
- * Name: fts_input_symlink
- *  Brief:
- *  Input:
- * Output:
- * Return: 0-success or others-error
+* Name: fts_gesture_show
+*  Brief:
+*  Input: device, device attribute, char buf
+* Output:
+* Return:
 ***********************************************************************/
-static ssize_t fts_input_symlink(struct i2c_client *client)
-{
-	char *driver_path;
-	int ret = 0;
-
- 	driver_path = kzalloc(PATH_MAX, GFP_KERNEL);
-	if (!driver_path) {
-		return -ENOMEM;
-	}
-
- 	sprintf(driver_path, "/sys%s",
-			kobject_get_path(&client->dev.kobj, GFP_KERNEL));
-
- 	pr_info("%s: driver_path=%s\n", __func__, driver_path);
-	proc_symlink("touchpanel", NULL, driver_path);
-
- 	kfree(driver_path);
-
- 	return ret;
-}
-
-/************************************************************************
- * Name: fts_gesture_show
- *  Brief:
- *  Input: device, device attribute, char buf
- * Output:
- * Return:
- ***********************************************************************/
 static ssize_t fts_gesture_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -194,12 +166,12 @@ static ssize_t fts_gesture_show(struct device *dev,
 }
 
 /************************************************************************
- * Name: fts_gesture_store
- *  Brief:
- *  Input: device, device attribute, char buf, char count
- * Output:
- * Return:
- ***********************************************************************/
+* Name: fts_gesture_store
+*  Brief:
+*  Input: device, device attribute, char buf, char count
+* Output:
+* Return:
+***********************************************************************/
 static ssize_t fts_gesture_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -207,10 +179,10 @@ static ssize_t fts_gesture_store(struct device *dev,
 
 	if (FTS_SYSFS_ECHO_ON(buf)) {
 		FTS_INFO("[GESTURE]enable gesture");
-		fts_gesture_data.mode = 1;
+		fts_gesture_data.mode = ENABLE;
 	} else if (FTS_SYSFS_ECHO_OFF(buf)) {
 		FTS_INFO("[GESTURE]disable gesture");
-		fts_gesture_data.mode = 0;
+		fts_gesture_data.mode = DISABLE;
 	}
 
 	mutex_unlock(&fts_input_dev->mutex);
@@ -219,12 +191,12 @@ static ssize_t fts_gesture_store(struct device *dev,
 }
 
 /************************************************************************
- * Name: fts_gesture_buf_show
- *  Brief:
- *  Input: device, device attribute, char buf
- * Output:
- * Return:
- ***********************************************************************/
+* Name: fts_gesture_buf_show
+*  Brief:
+*  Input: device, device attribute, char buf
+* Output:
+* Return:
+***********************************************************************/
 static ssize_t fts_gesture_buf_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -252,12 +224,12 @@ static ssize_t fts_gesture_buf_show(struct device *dev,
 }
 
 /************************************************************************
- * Name: fts_gesture_buf_store
- *  Brief:
- *  Input: device, device attribute, char buf, char count
- * Output:
- * Return:
- ***********************************************************************/
+* Name: fts_gesture_buf_store
+*  Brief:
+*  Input: device, device attribute, char buf, char count
+* Output:
+* Return:
+***********************************************************************/
 static ssize_t fts_gesture_buf_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -266,12 +238,12 @@ static ssize_t fts_gesture_buf_store(struct device *dev,
 }
 
 /*****************************************************************************
- *   Name: fts_create_gesture_sysfs
- *  Brief:
- *  Input:
- * Output:
- * Return: 0-success or others-error
- *****************************************************************************/
+*   Name: fts_create_gesture_sysfs
+*  Brief:
+*  Input:
+* Output:
+* Return: 0-success or others-error
+*****************************************************************************/
 int fts_create_gesture_sysfs(struct i2c_client *client)
 {
 	int ret = 0;
@@ -286,12 +258,12 @@ int fts_create_gesture_sysfs(struct i2c_client *client)
 }
 
 /*****************************************************************************
- *   Name: fts_gesture_report
- *  Brief:
- *  Input:
- * Output:
- * Return:
- *****************************************************************************/
+*   Name: fts_gesture_report
+*  Brief:
+*  Input:
+* Output:
+* Return:
+*****************************************************************************/
 static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
 {
 	int gesture;
@@ -359,12 +331,12 @@ static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
 }
 
 /************************************************************************
- *   Name: fts_gesture_readdata
- *  Brief: read data from TP register
- *  Input:
- * Output:
- * Return: fail <0
- ***********************************************************************/
+*   Name: fts_gesture_readdata
+*  Brief: read data from TP register
+*  Input:
+* Output:
+* Return: fail <0
+***********************************************************************/
 static int fts_gesture_read_buffer(struct i2c_client *client,
 				u8 *buf, int read_bytes)
 {
@@ -395,12 +367,12 @@ static int fts_gesture_read_buffer(struct i2c_client *client,
 }
 
 /************************************************************************
- *   Name: fts_gesture_fw
- *  Brief: Check IC's gesture recognise by FW or not
- *  Input:
- * Output:
- * Return: 1- FW  0- Driver
- ***********************************************************************/
+*   Name: fts_gesture_fw
+*  Brief: Check IC's gesture recognise by FW or not
+*  Input:
+* Output:
+* Return: 1- FW  0- Driver
+***********************************************************************/
 static int fts_gesture_fw(void)
 {
 	int ret = 0;
@@ -423,12 +395,12 @@ static int fts_gesture_fw(void)
 }
 
 /************************************************************************
- *   Name: fts_gesture_readdata
- *  Brief: read data from TP register
- *  Input:
- * Output:
- * Return: fail <0
- ***********************************************************************/
+*   Name: fts_gesture_readdata
+*  Brief: read data from TP register
+*  Input:
+* Output:
+* Return: fail <0
+***********************************************************************/
 int fts_gesture_readdata(struct i2c_client *client)
 {
 	u8 buf[FTS_GESTRUE_POINTS * 4] = { 0 };
@@ -501,12 +473,12 @@ int fts_gesture_readdata(struct i2c_client *client)
 }
 
 /*****************************************************************************
- *   Name: fts_gesture_recovery
- *  Brief: recovery gesture state when reset or power on
- *  Input:
- * Output:
- * Return:
- *****************************************************************************/
+*   Name: fts_gesture_recovery
+*  Brief: recovery gesture state when reset or power on
+*  Input:
+* Output:
+* Return:
+*****************************************************************************/
 void fts_gesture_recovery(struct i2c_client *client)
 {
 	if (fts_gesture_data.mode && fts_gesture_data.active) {
@@ -521,12 +493,12 @@ void fts_gesture_recovery(struct i2c_client *client)
 }
 
 /*****************************************************************************
- *   Name: fts_gesture_suspend
- *  Brief:
- *  Input:
- * Output: None
- * Return: None
- *****************************************************************************/
+*   Name: fts_gesture_suspend
+*  Brief:
+*  Input:
+* Output: None
+* Return: None
+*****************************************************************************/
 int fts_gesture_suspend(struct i2c_client *i2c_client)
 {
 	int i;
@@ -568,12 +540,12 @@ int fts_gesture_suspend(struct i2c_client *i2c_client)
 }
 
 /*****************************************************************************
- *   Name: fts_gesture_resume
- *  Brief:
- *  Input:
- * Output: None
- * Return: None
- *****************************************************************************/
+*   Name: fts_gesture_resume
+*  Brief:
+*  Input:
+* Output: None
+* Return: None
+*****************************************************************************/
 int fts_gesture_resume(struct i2c_client *client)
 {
 	int i;
@@ -612,12 +584,12 @@ int fts_gesture_resume(struct i2c_client *client)
 }
 
 /*****************************************************************************
- *   Name: fts_gesture_init
- *  Brief:
- *  Input:
- * Output: None
- * Return: None
- *****************************************************************************/
+*   Name: fts_gesture_init
+*  Brief:
+*  Input:
+* Output: None
+* Return: None
+*****************************************************************************/
 int fts_gesture_init(struct input_dev *input_dev, struct i2c_client *client)
 {
 	FTS_FUNC_ENTER();
@@ -653,8 +625,7 @@ int fts_gesture_init(struct input_dev *input_dev, struct i2c_client *client)
 	__set_bit(KEY_GESTURE_Z, input_dev->keybit);
 
 	fts_create_gesture_sysfs(client);
-	fts_input_symlink(client);
-	fts_gesture_data.mode = 0;
+	fts_gesture_data.mode = 1;
 	fts_gesture_data.active = 0;
 	FTS_FUNC_EXIT();
 
@@ -662,12 +633,12 @@ int fts_gesture_init(struct input_dev *input_dev, struct i2c_client *client)
 }
 
 /************************************************************************
- *   Name: fts_gesture_exit
- *  Brief: call when driver removed
- *  Input:
- * Output:
- * Return:
- ***********************************************************************/
+*   Name: fts_gesture_exit
+*  Brief: call when driver removed
+*  Input:
+* Output:
+* Return:
+***********************************************************************/
 int fts_gesture_exit(struct i2c_client *client)
 {
 	FTS_FUNC_ENTER();
